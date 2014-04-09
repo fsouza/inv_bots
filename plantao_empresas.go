@@ -10,7 +10,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/globocom/tsuru/db/storage"
+	"github.com/tsuru/tsuru/db/storage"
 	"io/ioutil"
 	"labix.org/v2/mgo"
 	"launchpad.net/xmlpath"
