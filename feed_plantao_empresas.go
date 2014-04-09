@@ -10,8 +10,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/globocom/tsuru/db/storage"
 	"github.com/gorilla/feeds"
+	"github.com/tsuru/tsuru/db/storage"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"net/http"
