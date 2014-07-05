@@ -21,7 +21,7 @@ function tesourodireto(nome) {
 	var data = JSON.parse(response.getContentText());
 	for(var i = 0; i < data.length; i++) {
 		if(data[i].Titulo == nome) {
-			return data[i].PrecoCompra > 0 ? data[i].PrecoCompra : data[i].PrecoVenda;
+			return data[i].PrecoVenda > 0 ? data[i].PrecoVenda : data[i].PrecoCompra;
 		}
 	}
 	return 0;
