@@ -70,6 +70,25 @@ func collectCDI() {
 	}
 }
 
+func cdiHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(cdi)
+}
+
+func equivHandler(w http.ResponseWriter, r *http.Request) {
+	queryValue := r.URL.Query().Get("value")
+	value, err := strconv.ParseFloat(queryValue, 64)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if value > 100 {
+		value /= 100
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(cdi.Equiv(value))
+}
+
 func main() {
 	flag.Parse()
 	collectCDI()
@@ -78,10 +97,9 @@ func main() {
 			collectCDI()
 		}
 	}()
-	err := http.ListenAndServe(bind, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(cdi)
-	}))
+	http.HandleFunc("/equiv", equivHandler)
+	http.HandleFunc("/", cdiHandler)
+	err := http.ListenAndServe(bind, nil)
 	if err != nil {
 		panic(err)
 	}
