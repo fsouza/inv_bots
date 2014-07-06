@@ -31,6 +31,13 @@ func (i *AnnualInterest) CalculateYear() {
 	i.Year = (math.Pow(1+i.Day/100, 252.0) - 1) * 100
 }
 
+func (i *AnnualInterest) Equiv(value float64) AnnualInterest {
+	var equiv AnnualInterest
+	equiv.Day = value * i.Day
+	equiv.CalculateYear()
+	return equiv
+}
+
 var cdi AnnualInterest
 
 var (
