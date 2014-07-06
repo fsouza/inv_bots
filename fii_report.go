@@ -90,7 +90,6 @@ func notifyRecords(newsList []News) {
 	}
 	defer mailSender.Close()
 	for _, news := range newsList {
-		log.Printf("Notifying %s", news.ID)
 		var body bytes.Buffer
 		emailTemplate.Execute(&body, map[string]string{
 			"subject":   news.Title,
