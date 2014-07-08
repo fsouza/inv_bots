@@ -78,6 +78,7 @@ func getNotificatedNews() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer session.Close()
 	collection := notificationsCollection(session)
 	var notifications []Notification
 	err = collection.Find(nil).Select(bson.M{"newsid": 1}).All(&notifications)
