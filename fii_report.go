@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	dbName   = "bovespa_plantao_empresas"
-	collName = "news"
+	dbName                = "bovespa_plantao_empresas"
+	newsCollName          = "news"
+	notificationsCollName = "notifications"
 )
 
 var emailTemplate = template.Must(template.New("report").Parse(`Subject: {{.subject}}
@@ -34,10 +35,15 @@ var (
 )
 
 type News struct {
-	ID       string `bson:"_id"`
-	Title    string
-	Date     time.Time
-	Notified bool
+	ID    string `bson:"_id"`
+	Title string
+	Date  time.Time
+}
+
+type Notification struct {
+	NewsID    string
+	Date      time.Time
+	Recipient string
 }
 
 func init() {
@@ -52,6 +58,12 @@ func connect() (*mgo.Session, error) {
 	return mgo.Dial("localhost:27017")
 }
 
+func notificationsCollection(session *mgo.Session) *mgo.Collection {
+	collection := session.DB(dbName).C(notificationsCollName)
+	collection.EnsureIndex(mgo.Index{Key: []string{"newsid"}, Background: true})
+	return collection
+}
+
 func poolRecords(ticker <-chan time.Time) {
 	for _ = range ticker {
 		records := getRecords()
@@ -61,6 +73,24 @@ func poolRecords(ticker <-chan time.Time) {
 	}
 }
 
+func getNotificatedNews() ([]string, error) {
+	session, err := connect()
+	if err != nil {
+		return nil, err
+	}
+	collection := notificationsCollection(session)
+	var notifications []Notification
+	err = collection.Find(nil).Select(bson.M{"newsid": 1}).All(&notifications)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]string, len(notifications))
+	for i, notification := range notifications {
+		result[i] = notification.NewsID
+	}
+	return result, nil
+}
+
 func getRecords() []News {
 	session, err := connect()
 	if err != nil {
@@ -68,11 +98,16 @@ func getRecords() []News {
 		return nil
 	}
 	defer session.Close()
-	collection := session.DB(dbName).C(collName)
+	notificated, err := getNotificatedNews()
+	if err != nil {
+		log.Printf("ERROR: %s", err)
+		return nil
+	}
+	collection := session.DB(dbName).C(newsCollName)
 	var newsList []News
 	query := bson.M{
+		"_id":   bson.M{"$nin": notificated},
 		"title": bson.M{"$regex": "^fii.*(relatorio|informe)", "$options": "i"},
-		"notified": bson.M{"$ne": true},
 	}
 	err = collection.Find(query).All(&newsList)
 	if err != nil {
@@ -89,6 +124,12 @@ func notifyRecords(newsList []News) {
 		return
 	}
 	defer mailSender.Close()
+	session, err := connect()
+	if err != nil {
+		log.Printf("ERROR: %s", err)
+		return
+	}
+	defer session.Close()
 	for _, news := range newsList {
 		var body bytes.Buffer
 		emailTemplate.Execute(&body, map[string]string{
@@ -102,15 +143,8 @@ func notifyRecords(newsList []News) {
 			log.Printf("ERROR: %s", err)
 			return
 		}
-		news.Notified = true
-		session, err := connect()
-		if err != nil {
-			log.Printf("ERROR: %s", err)
-			return
-		}
-		defer session.Close()
-		collection := session.DB(dbName).C(collName)
-		collection.UpdateId(news.ID, news)
+		collection := notificationsCollection(session)
+		collection.Insert(Notification{NewsID: news.ID, Recipient: recipient, Date: time.Now()})
 	}
 }
 
