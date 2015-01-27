@@ -37,6 +37,10 @@ func (s *Session) Insert(record interface{}) error {
 	return err
 }
 
+func (s *Session) Select(query string, args ...interface{}) (*sql.Rows, error) {
+	return s.conn.Query(query, args...)
+}
+
 func generatePreparedInsert(record interface{}) (string, []interface{}) {
 	if record == nil {
 		return "", nil
