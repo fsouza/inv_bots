@@ -1,4 +1,4 @@
-// Copyright 2014 Francisco Souza. All rights reserved.
+// Copyright 2015 Francisco Souza. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -17,7 +17,7 @@
 //
 // The code for the server is available in the file tesouro_direto.go.
 function tesourodireto(nome) {
-	var response = UrlFetchApp.fetch("http://td.souza.cc");
+	var response = UrlFetchApp.fetch("https://td.souza.cc");
 	var data = JSON.parse(response.getContentText());
 	for(var i = 0; i < data.length; i++) {
 		if(data[i].Titulo == nome) {
