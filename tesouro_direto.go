@@ -1,4 +1,4 @@
-// Copyright 2014 Francisco Souza. All rights reserved.
+// Copyright 2015 Francisco Souza. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -117,11 +117,10 @@ func collectTitulos() {
 func tesouroDireto(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(titulos)
-
 }
 
 func collectLoop() {
-	for _ = range time.Tick(interval) {
+	for range time.Tick(interval) {
 		collectTitulos()
 	}
 }
