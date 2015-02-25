@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This bot collects all material facts about companies from CVM website and
-// send them via email, using Gmail's SMTP server.
+// This bot collects all relevant facts about companies listed in the Bovespa
+// stock exchange and send them via email, using Gmail's SMTP server.
 //
 // Users can customize at runtime the interval of the queries, and information
 // about the sender and recipient of the email.
@@ -12,25 +12,24 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"io/ioutil"
+	"labix.org/v2/mgo"
+	"labix.org/v2/mgo/bson"
+	"launchpad.net/xmlpath"
 	"log"
 	"net/http"
 	"net/smtp"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"sync"
 	"text/template"
 	"time"
-
-	"github.com/fsouza/inv_bots/db"
-	"launchpad.net/xmlpath"
 )
 
 const (
-	tableName   = "cvm_material_facts"
+	dbName      = "cvm_fatos_relevantes"
+	collName    = "records"
 	listURL     = "http://siteempresas.bovespa.com.br/consbov/ExibeFatosRelevantesCvm.asp?pagina="
 	protocolURL = "http://siteempresas.bovespa.com.br/consbov/ArquivosExibe.asp?protocolo="
 )
@@ -68,12 +67,15 @@ func init() {
 }
 
 type Record struct {
-	TableName     string `sql:"cvm_material_facts"`
-	SendDate      string `sql:"send_date"`
-	ReferenceDate string `sql:"reference_date"`
+	SendDate      string
+	ReferenceDate string
 	Company       string
 	Subject       string
 	Protocol      string
+}
+
+func connect() (*mgo.Session, error) {
+	return mgo.Dial("localhost:27017")
 }
 
 func toUTF8(input []byte) string {
@@ -160,48 +162,36 @@ func getRecords() []Record {
 	if len(pageRecords) < 1 {
 		return nil
 	}
-	connString := os.Getenv("CVM_CONNECTION_STRING")
-	session, err := db.Connect(connString)
+	session, err := connect()
 	if err != nil {
 		log.Printf("ERROR: %s", err)
 		return nil
 	}
 	defer session.Close()
-	query, args := buildQuery(pageRecords)
-	rows, err := session.Select(query, args...)
+	query := buildQuery(pageRecords)
+	collection := session.DB(dbName).C(collName)
+	count, err := collection.Find(query).Count()
 	if err != nil {
 		log.Printf("ERROR: %s", err)
 		return nil
 	}
-	defer rows.Close()
-	var count int
-	for rows.Next() {
-		err = rows.Scan(&count)
-		if err != nil {
-			log.Printf("ERROR: %s", err)
-			return nil
-		}
-	}
 	records := pageRecords[:len(pageRecords)-count]
 	for _, record := range records {
-		session.Insert(record)
+		collection.Insert(record)
 	}
 	return records
 }
 
-func buildQuery(records []Record) (string, []interface{}) {
-	sendDates := make([]interface{}, len(records))
-	placeHolders := make([]string, len(records))
+func buildQuery(records []Record) bson.M {
+	sendDates := make([]string, len(records))
 	for i, record := range records {
 		sendDates[i] = record.SendDate
-		placeHolders[i] = "$" + strconv.Itoa(i+1)
 	}
-	sqlPattern := "SELECT count(1) FROM %s WHERE send_date IN (%s)"
-	return fmt.Sprintf(sqlPattern, tableName, strings.Join(placeHolders, ",")), sendDates
+	return bson.M{"senddate": bson.M{"$in": sendDates}}
 }
 
 func poolPage(ticker <-chan time.Time) {
-	for range ticker {
+	for _ = range ticker {
 		records := getRecords()
 		log.Printf("INFO: %d new record(s)", len(records))
 		if len(records) > 0 {
