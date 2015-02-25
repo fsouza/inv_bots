@@ -17,6 +17,9 @@
 //
 // The code for the server is available in the file tesouro_direto.go.
 function tesourodireto(nome) {
+	if(nome == "") {
+		return 0;
+	}
 	var response = UrlFetchApp.fetch("https://td.souza.cc");
 	var data = JSON.parse(response.getContentText());
 	for(var i = 0; i < data.length; i++) {
