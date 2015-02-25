@@ -1,4 +1,4 @@
-// Copyright 2014 Francisco Souza. All rights reserved.
+// Copyright 2015 Francisco Souza. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -108,6 +108,7 @@ func feedAll(w http.ResponseWriter, r *http.Request) {
 	feed, err := getFeed(bson.M{"title": bson.M{"$regex": "^((?!fii))", "$options": "i"}}, "all", baseURL)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 	atom, err := feed.ToAtom()
 	if err != nil {
