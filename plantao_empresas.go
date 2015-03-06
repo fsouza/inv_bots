@@ -1,4 +1,4 @@
-// Copyright 2014 Francisco Souza. All rights reserved.
+// Copyright 2015 Francisco Souza. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,15 +10,16 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/tsuru/tsuru/db/storage"
 	"io/ioutil"
-	"labix.org/v2/mgo"
-	"launchpad.net/xmlpath"
 	"log"
 	"net/http"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/tsuru/tsuru/db/storage"
+	"gopkg.in/mgo.v2"
+	"launchpad.net/xmlpath"
 )
 
 const BaseURL = "http://www.bmfbovespa.com.br/Agencia-Noticias/ListarNoticias.aspx?idioma=pt-br&q=&tipoFiltro=%d&pg=%d"
@@ -133,6 +134,7 @@ func run() {
 		node, err := downloadContent(i + 1)
 		if err != nil {
 			log.Print(err)
+			continue
 		}
 		if !pathLink.Exists(node) {
 			break
