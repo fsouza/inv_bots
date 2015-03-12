@@ -1,15 +1,20 @@
+// Copyright 2014 Francisco Souza. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 package main
 
 import (
 	"bytes"
 	"flag"
-	"github.com/fsouza/inv_bots/lib"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
 	"log"
 	"os"
 	"text/template"
 	"time"
+
+	"github.com/fsouza/inv_bots/lib"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
