@@ -34,7 +34,7 @@ const (
 	protocolURL = "http://siteempresas.bovespa.com.br/consbov/ArquivosExibe.asp?protocolo="
 )
 
-var emailTemplate = template.Must(template.New("fatorelevante").Parse(`Subject: FATO RELEVANTE - {{.company}}
+var emailTemplate = template.Must(template.New("fatorelevante").Parse(`Subject: [FATO RELEVANTE] {{.company}}
 To: {{.recipient}}
 From: {{.sender}}
 
