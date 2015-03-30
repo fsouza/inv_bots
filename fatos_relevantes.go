@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This bot collects all relevant facts about companies listed in the Bovespa
+// This bot collects all material facts about companies listed in the Bovespa
 // stock exchange and send them via email, using Gmail's SMTP server.
 //
 // Users can customize at runtime the interval of the queries, and information
