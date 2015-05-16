@@ -132,7 +132,7 @@ func feedFIIs(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Add("Content-Type", "application/tom+xml")
+	w.Header().Add("Content-Type", "application/atom+xml")
 	fmt.Fprint(w, atom)
 }
 
