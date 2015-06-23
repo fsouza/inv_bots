@@ -1,4 +1,4 @@
-// Copyright 2014 Francisco Souza. All rights reserved.
+// Copyright 2015 Francisco Souza. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -13,9 +13,6 @@ import (
 	"bytes"
 	"flag"
 	"io/ioutil"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
-	"launchpad.net/xmlpath"
 	"log"
 	"net/http"
 	"net/smtp"
@@ -25,6 +22,10 @@ import (
 	"sync"
 	"text/template"
 	"time"
+
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"launchpad.net/xmlpath"
 )
 
 const (
