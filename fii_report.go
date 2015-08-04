@@ -113,7 +113,7 @@ func getRecords() []News {
 	var newsList []News
 	query := bson.M{
 		"_id":   bson.M{"$nin": notificated},
-		"title": bson.M{"$regex": "^fii.*(relatorio|informe|carta)", "$options": "i"},
+		"title": bson.M{"$regex": "^fii.*(relatorio|carta)", "$options": "i"},
 	}
 	err = collection.Find(query).All(&newsList)
 	if err != nil {
